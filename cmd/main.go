@@ -29,6 +29,7 @@ import (
 	"sigs.k8s.io/kubebuilder/v3/pkg/plugin"
 	kustomizecommonv1 "sigs.k8s.io/kubebuilder/v3/pkg/plugins/common/kustomize/v1"
 	kustomizecommonv2alpha "sigs.k8s.io/kubebuilder/v3/pkg/plugins/common/kustomize/v2-alpha"
+	configgenv1alpha "sigs.k8s.io/kubebuilder/v3/pkg/plugins/config-gen/v1alpha"
 	"sigs.k8s.io/kubebuilder/v3/pkg/plugins/golang"
 	declarativev1 "sigs.k8s.io/kubebuilder/v3/pkg/plugins/golang/declarative/v1"
 	deployimagev1alpha1 "sigs.k8s.io/kubebuilder/v3/pkg/plugins/golang/deploy-image/v1alpha1"
@@ -58,6 +59,11 @@ func main() {
 		logrus.Error(err)
 	}
 
+	goConfigGenv3Bundle, _ := plugin.NewBundle("go.config-gen", plugin.Version{Number: 1, Stage: stage.Alpha},
+		golangv3.Plugin{},
+		configgenv1alpha.Plugin{},
+	)
+
 	c, err := cli.New(
 		cli.WithCommandName("kubebuilder"),
 		cli.WithVersion(versionString()),
@@ -66,11 +72,13 @@ func main() {
 			golangv3.Plugin{},
 			gov3Bundle,
 			gov4Bundle,
+			goConfigGenv3Bundle,
 			&kustomizecommonv1.Plugin{},
 			&kustomizecommonv2alpha.Plugin{},
 			&declarativev1.Plugin{},
 			&deployimagev1alpha1.Plugin{},
 			&grafanav1alpha1.Plugin{},
+			&configgenv1alpha.Plugin{},
 		),
 		cli.WithPlugins(externalPlugins...),
 		cli.WithDefaultPlugins(cfgv2.Version, golangv2.Plugin{}),

@@ -70,6 +70,12 @@ function scaffold_test_project {
     fi
 
     $kb create api --group crew --version v1 --kind Laker --controller=true --resource=false --make=false
+  elif [ $project == "project-v3-config-gen" ]; then
+    header_text 'Creating APIs ...'
+    $kb create api --group crew --version v1 --kind Captain --controller=true --resource=true --make=false
+    $kb create webhook --group crew --version v1 --kind Captain --defaulting --programmatic-validation
+    $kb create api --group crew --version v1 --kind Admiral --plural=admirales --controller=true --resource=true --namespaced=false --make=false
+    $kb create webhook --group crew --version v1 --kind Admiral --plural=admirales --defaulting
   elif [[ $project =~ multigroup ]]; then
     header_text 'Switching to multigroup layout ...'
     $kb edit --multigroup=true
@@ -118,7 +124,12 @@ function scaffold_test_project {
       $kb edit --plugins=grafana.kubebuilder.io/v1-alpha
   fi
 
-  make generate manifests
+  if [ $project == "project-v3-config-gen" ]; then
+    $kb alpha config-gen ./kubebuilderconfiggen.yaml > project.yaml
+  else
+    make generate manifests
+  fi
+
   rm -f go.sum
 
   popd
@@ -135,6 +146,7 @@ scaffold_test_project project-v3-multigroup
 scaffold_test_project project-v3-addon-and-grafana --plugins="go/v3,declarative,grafana/v1-alpha"
 scaffold_test_project project-v3-config --component-config
 scaffold_test_project project-v3-with-deploy-image
+scaffold_test_project project-v3-config-gen --plugins="go.config-gen/v1-alpha"
 
 # [Next version, alpha] Project version v4-alpha
 scaffold_test_project project-v4 --plugins="go/v4-alpha"
